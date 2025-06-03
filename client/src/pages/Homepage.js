@@ -1,30 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { useQuestion } from "../context/QuestionContext";
-import { useActive } from "../context/ActiveContext";
 
 const Homepage = () => {
-  const { question } = useQuestion();
-  const { isActive } = useActive();
+  const [question, setQuestion] = useState("");
+  const [isActive, setIsActive] = useState(true);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchResults = async () => {
+    const fetchMeta = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/results");
-        if (!response.ok) {
-          throw new Error("Failed to fetch results");
-        }
-        const data = await response.json();
-        setResults(data);
-      } catch (error) {
-        console.error("Error fetching results:", error);
+        const [questionRes, statusRes, resultsRes] = await Promise.all([
+          fetch("http://localhost:5000/api/question"),
+          fetch("http://localhost:5000/api/status"),
+          fetch("http://localhost:5000/api/results"),
+        ]);
+
+        const questionData = await questionRes.json();
+        const statusData = await statusRes.json();
+        const resultsData = await resultsRes.json();
+
+        setQuestion(questionData.question);
+        setIsActive(statusData.isActive);
+        setResults(resultsData);
+      } catch (err) {
+        console.error("Failed to fetch meta:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchResults();
+    fetchMeta();
   }, []);
 
   return (

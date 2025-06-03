@@ -1,15 +1,30 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuestion } from "../context/QuestionContext";
 
 const Admin = () => {
   const [input, setInput] = useState("");
-  const { setQuestion } = useQuestion();
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    setQuestion(input);
-    console.log("Küsimus salvestatud:", input);
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/question", {
+        method: "POST", // or PUT, depending on your server setup
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ question: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update question");
+      }
+
+      console.log("Küsimus salvestatud:", input);
+      // Optional: Add a success message here
+    } catch (error) {
+      console.error("Error saving question:", error);
+      // Optional: Display error to user
+    }
   };
 
   const goToLog = () => {
